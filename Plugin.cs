@@ -18,6 +18,8 @@ namespace MagicEitrBase
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
+        
+        internal static string ConnectionError = "";
 
         private static readonly ConfigSync ConfigSync = new(ModGUID)
             { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
