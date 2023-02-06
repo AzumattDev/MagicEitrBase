@@ -69,7 +69,7 @@ static class PlayerGetTotalFoodValuePatch
             {
                 holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
-            else
+            else if(Math.Abs(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic) - Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) < 0.1f)
             {
                 holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
@@ -78,7 +78,6 @@ static class PlayerGetTotalFoodValuePatch
         {
             return holder;
         }
-
         return holder;
     }
 
