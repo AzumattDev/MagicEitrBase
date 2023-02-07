@@ -61,17 +61,17 @@ static class PlayerGetTotalFoodValuePatch
             if (Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic) >
                 Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic))
             {
-                holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
+                holder += (LevelUp(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
 
             if (Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic) >
                 Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic))
             {
-                holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
+                holder += (LevelUp(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
             else if(Math.Abs(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic) - Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) < 0.1f)
             {
-                holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
+                holder += (LevelUp(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
         }
         catch
@@ -81,9 +81,9 @@ static class PlayerGetTotalFoodValuePatch
         return holder;
     }
 
-    private static int LevelUp(int skillLevel)
+    private static float LevelUp(float skillLevel)
     {
-        return (int)((Math.Pow(skillLevel / MagicEitrBasePlugin.Skill_Divider.Value, MagicEitrBasePlugin.Power_Amount.Value)) * MagicEitrBasePlugin.Skill_Scalar.Value);
+        return (float)((Math.Pow(skillLevel / MagicEitrBasePlugin.Skill_Divider.Value, MagicEitrBasePlugin.Power_Amount.Value)) * MagicEitrBasePlugin.Skill_Scalar.Value);
     }
 
 }

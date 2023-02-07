@@ -13,7 +13,7 @@ namespace MagicEitrBase
     public class MagicEitrBasePlugin : BaseUnityPlugin
     {
         internal const string ModName = "MagicEitrBase";
-        internal const string ModVersion = "1.1.1";
+        internal const string ModVersion = "1.1.2";
         internal const string Author = "Azumatt";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -44,7 +44,7 @@ namespace MagicEitrBase
             Skill_Divider = config("2 - Math Variables", "Skill Divider", 100.0f,
                 "The skill divider used in the calculation of the base eitr.");
 
-            Power_Amount = config("2 - Math Variables", "Power Amount", 2,
+            Power_Amount = config("2 - Math Variables", "Power Amount", 2.0f,
                 "The power amount used in the calculation of the base eitr.");
 
 
@@ -97,7 +97,7 @@ namespace MagicEitrBase
 
         private static ConfigEntry<Toggle> _serverConfigLocked = null!;
         internal static ConfigEntry<float> Skill_Divider = null!;
-        internal static ConfigEntry<int> Power_Amount = null!;
+        internal static ConfigEntry<float> Power_Amount = null!;
         internal static ConfigEntry<int> Skill_Scalar = null!;
         internal static ConfigEntry<float> Final_Multiplier = null!;
 
