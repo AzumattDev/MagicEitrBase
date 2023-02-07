@@ -13,7 +13,7 @@ namespace MagicEitrBase
     public class MagicEitrBasePlugin : BaseUnityPlugin
     {
         internal const string ModName = "MagicEitrBase";
-        internal const string ModVersion = "1.1.2";
+        internal const string ModVersion = "1.1.3";
         internal const string Author = "Azumatt";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
