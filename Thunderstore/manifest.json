@@ -1,9 +1,9 @@
 {
   "name": "MagicEitrBase",
-  "version_number": "1.1.3",
+  "version_number": "1.1.4",
   "website_url": "https://discord.gg/pdHgy6Bsng",
   "description": "A mod that will update your base Eitr by a factor of your magic skills. Whichever skill is highest will be used to calculate the base Eitr value.",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.1901"
+    "denikson-BepInExPack_Valheim-5.4.2200"
   ]
 }
