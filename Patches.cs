@@ -32,7 +32,6 @@ public static class PlayerAwakePatch
     }
 }
 
-
 [HarmonyPatch(typeof(Player), nameof(Player.GetTotalFoodValue))]
 static class PlayerGetTotalFoodValuePatch
 {
@@ -70,7 +69,7 @@ static class PlayerGetTotalFoodValuePatch
             {
                 holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
-            else if(Mathf.Abs(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic) - Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) < 0.1f)
+            else if (Mathf.Abs(Player.m_localPlayer.GetSkillLevel(Skills.SkillType.BloodMagic) - Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) < 0.1f)
             {
                 holder += (LevelUp((int)Player.m_localPlayer.GetSkillLevel(Skills.SkillType.ElementalMagic)) * MagicEitrBasePlugin.Final_Multiplier.Value);
             }
@@ -79,6 +78,7 @@ static class PlayerGetTotalFoodValuePatch
         {
             return holder;
         }
+
         return holder;
     }
 
@@ -86,7 +86,6 @@ static class PlayerGetTotalFoodValuePatch
     {
         return (Mathf.Pow(skillLevel / MagicEitrBasePlugin.Skill_Divider.Value, MagicEitrBasePlugin.Power_Amount.Value)) * MagicEitrBasePlugin.Skill_Scalar.Value;
     }
-
 }
 
 [HarmonyPatch(typeof(Player), nameof(Player.OnSkillLevelup))]
@@ -101,7 +100,7 @@ static class PlayerGetBaseFoodHpPatch
     }
 }
 
-[HarmonyPatch(typeof(Skills),nameof(Skills.Awake))]
+[HarmonyPatch(typeof(Skills), nameof(Skills.Awake))]
 static class GameSpawnPlayerPatch
 {
     static void Postfix(Game __instance)
@@ -110,7 +109,7 @@ static class GameSpawnPlayerPatch
     }
 }
 
-[HarmonyPatch(typeof(Terminal),nameof(Terminal.TryRunCommand))]
+[HarmonyPatch(typeof(Terminal), nameof(Terminal.TryRunCommand))]
 static class TerminalTryRunCommandPatch
 {
     static void Postfix(Terminal __instance, string text, bool silentFail = false, bool skipAllowedCheck = false)
@@ -121,3 +120,38 @@ static class TerminalTryRunCommandPatch
         }
     }
 }
+
+[HarmonyPatch(typeof(Player), nameof(Player.UpdateStats))]
+static class PlayerUpdateStatsPatch
+{
+    private static float _m_eitrRegenTimeMultiplier;
+
+    [HarmonyPriority(Priority.VeryLow)]
+    static void Prefix(Player __instance, float dt)
+    {
+        if (__instance.InIntro() || __instance.IsTeleporting())
+            return;
+
+        if (MagicEitrBasePlugin.LinearRegeneration.Value == MagicEitrBasePlugin.Toggle.On && 0f < MagicEitrBasePlugin.LinearRegenerationThreshold.Value && MagicEitrBasePlugin.LinearRegenerationThreshold.Value < 1f && MagicEitrBasePlugin.LinearRegenerationMultiplier.Value > 0f && __instance.GetMaxEitr() != 0f)
+        {
+            if (__instance.GetEitrPercentage() < MagicEitrBasePlugin.LinearRegenerationThreshold.Value)
+            {
+                float t = Mathf.Clamp01(__instance.GetEitr() / (__instance.GetMaxEitr() * MagicEitrBasePlugin.LinearRegenerationThreshold.Value));
+                __instance.m_eitrRegenTimer = Mathf.Lerp(MagicEitrBasePlugin.LinearRegenerationMultiplier.Value, __instance.m_staminaRegenTimeMultiplier, t);
+            }
+            else if (__instance.GetEitrPercentage() > MagicEitrBasePlugin.LinearRegenerationThreshold.Value)
+            {
+                float t = Mathf.Clamp01((__instance.GetMaxEitr() - __instance.GetEitr()) / (__instance.GetMaxEitr() * (1f - MagicEitrBasePlugin.LinearRegenerationThreshold.Value)));
+                __instance.m_staminaRegenTimeMultiplier = Mathf.Lerp(1 / MagicEitrBasePlugin.LinearRegenerationMultiplier.Value, __instance.m_staminaRegenTimeMultiplier, t);
+            }
+        }
+    }
+
+    [HarmonyPriority(Priority.VeryHigh)]
+    public static void Postfix(Player __instance)
+    {
+        if (__instance.m_staminaRegenTimeMultiplier != _m_eitrRegenTimeMultiplier && _m_eitrRegenTimeMultiplier != 0f)
+            __instance.m_staminaRegenTimeMultiplier = _m_eitrRegenTimeMultiplier;
+    }
+}
+
