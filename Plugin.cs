@@ -13,7 +13,7 @@ namespace MagicEitrBase
     public class MagicEitrBasePlugin : BaseUnityPlugin
     {
         internal const string ModName = "MagicEitrBase";
-        internal const string ModVersion = "1.1.6";
+        internal const string ModVersion = "1.1.7";
         internal const string Author = "Azumatt";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
@@ -100,14 +100,9 @@ namespace MagicEitrBase
         internal static ConfigEntry<float> LinearRegenerationMultiplier = null!;
         internal static ConfigEntry<float> LinearRegenerationThreshold = null!;
 
-        private ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description,
-            bool synchronizedSetting = true)
+        private ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description, bool synchronizedSetting = true)
         {
-            ConfigDescription extendedDescription =
-                new(
-                    description.Description +
-                    (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]"),
-                    description.AcceptableValues, description.Tags);
+            ConfigDescription extendedDescription = new(description.Description + (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]"), description.AcceptableValues, description.Tags);
             ConfigEntry<T> configEntry = Config.Bind(group, name, value, extendedDescription);
             //var configEntry = Config.Bind(group, name, value, description);
 
@@ -117,28 +112,9 @@ namespace MagicEitrBase
             return configEntry;
         }
 
-        private ConfigEntry<T> config<T>(string group, string name, T value, string description,
-            bool synchronizedSetting = true)
+        private ConfigEntry<T> config<T>(string group, string name, T value, string description, bool synchronizedSetting = true)
         {
             return config(group, name, value, new ConfigDescription(description), synchronizedSetting);
-        }
-
-        private class ConfigurationManagerAttributes
-        {
-            public bool? Browsable = false;
-        }
-
-        class AcceptableShortcuts : AcceptableValueBase // Used for KeyboardShortcut Configs 
-        {
-            public AcceptableShortcuts() : base(typeof(KeyboardShortcut))
-            {
-            }
-
-            public override object Clamp(object value) => value;
-            public override bool IsValid(object value) => true;
-
-            public override string ToDescriptionString() =>
-                "# Acceptable values: " + string.Join(", ", UnityInput.Current.SupportedKeyCodes);
         }
 
         #endregion

@@ -1,6 +1,6 @@
 {
   "name": "MagicEitrBase",
-  "version_number": "1.1.6",
+  "version_number": "1.1.7",
   "website_url": "https://discord.gg/pdHgy6Bsng",
   "description": "A mod that will update your base Eitr by a factor of your magic skills. Whichever skill is highest will be used to calculate the base Eitr value.",
   "dependencies": [

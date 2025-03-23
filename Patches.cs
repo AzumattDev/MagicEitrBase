@@ -121,7 +121,7 @@ static class TerminalTryRunCommandPatch
     }
 }
 
-[HarmonyPatch(typeof(Player), nameof(Player.UpdateStats))]
+[HarmonyPatch(typeof(Player), nameof(Player.UpdateStats), typeof(float))]
 static class PlayerUpdateStatsPatch
 {
     private static float _m_eitrRegenTimeMultiplier;
