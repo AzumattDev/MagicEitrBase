@@ -11,8 +11,7 @@ namespace MagicEitrBase
         {
             // Register version check call
             MagicEitrBasePlugin.MagicEitrBaseLogger.LogDebug("Registering version RPC handler");
-            peer.m_rpc.Register($"{MagicEitrBasePlugin.ModName}_VersionCheck",
-                new Action<ZRpc, ZPackage>(RpcHandlers.RPC_FenrirsCurse_Version));
+            peer.m_rpc.Register($"{MagicEitrBasePlugin.ModName}_VersionCheck", new Action<ZRpc, ZPackage>(RpcHandlers.RPC_MagicEitrBase_Version));
 
             // Make calls to check versions
             MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo("Invoking version check");
@@ -29,8 +28,7 @@ namespace MagicEitrBase
         {
             if (!__instance.IsServer() || RpcHandlers.ValidatedPeers.Contains(rpc)) return true;
             // Disconnect peer if they didn't send mod version at all
-            MagicEitrBasePlugin.MagicEitrBaseLogger.LogWarning(
-                $"Peer ({rpc.m_socket.GetHostName()}) never sent version or couldn't due to previous disconnect, disconnecting");
+            MagicEitrBasePlugin.MagicEitrBaseLogger.LogWarning($"Peer ({rpc.m_socket.GetHostName()}) never sent version or couldn't due to previous disconnect, disconnecting");
             rpc.Invoke("Error", 3);
             return false; // Prevent calling underlying method
         }
@@ -41,12 +39,10 @@ namespace MagicEitrBase
     {
         private static void Postfix(FejdStartup __instance)
         {
-            if (__instance.m_connectionFailedPanel.activeSelf)
-            {
-                __instance.m_connectionFailedError.fontSizeMax = 25;
-                __instance.m_connectionFailedError.fontSizeMin = 15;
-                __instance.m_connectionFailedError.text += "\n" + MagicEitrBasePlugin.ConnectionError;
-            }
+            if (!__instance.m_connectionFailedPanel.activeSelf) return;
+            __instance.m_connectionFailedError.fontSizeMax = 25;
+            __instance.m_connectionFailedError.fontSizeMin = 15;
+            __instance.m_connectionFailedError.text += "\n" + MagicEitrBasePlugin.ConnectionError;
         }
     }
 
@@ -57,8 +53,7 @@ namespace MagicEitrBase
         {
             if (!__instance.IsServer()) return;
             // Remove peer from validated list
-            MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo(
-                $"Peer ({peer.m_rpc.m_socket.GetHostName()}) disconnected, removing from validated list");
+            MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo($"Peer ({peer.m_rpc.m_socket.GetHostName()}) disconnected, removing from validated list");
             _ = RpcHandlers.ValidatedPeers.Remove(peer.m_rpc);
         }
     }
@@ -67,20 +62,16 @@ namespace MagicEitrBase
     {
         public static readonly List<ZRpc> ValidatedPeers = new();
 
-        public static void RPC_FenrirsCurse_Version(ZRpc rpc, ZPackage pkg)
+        public static void RPC_MagicEitrBase_Version(ZRpc rpc, ZPackage pkg)
         {
             string? version = pkg.ReadString();
-            MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo("Version check, local: " +
-                                                            MagicEitrBasePlugin.ModVersion +
-                                                            ",  remote: " + version);
+            MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo($"Version check, local: {MagicEitrBasePlugin.ModVersion},  remote: {version}");
             if (version != MagicEitrBasePlugin.ModVersion)
             {
-                MagicEitrBasePlugin.ConnectionError =
-                    $"{MagicEitrBasePlugin.ModName} Installed: {MagicEitrBasePlugin.ModVersion}\n Needed: {version}";
+                MagicEitrBasePlugin.ConnectionError = $"{MagicEitrBasePlugin.ModName} Installed: {MagicEitrBasePlugin.ModVersion}\n Needed: {version}";
                 if (!ZNet.instance.IsServer()) return;
                 // Different versions - force disconnect client from server
-                MagicEitrBasePlugin.MagicEitrBaseLogger.LogWarning(
-                    $"Peer ({rpc.m_socket.GetHostName()}) has incompatible version, disconnecting");
+                MagicEitrBasePlugin.MagicEitrBaseLogger.LogWarning($"Peer ({rpc.m_socket.GetHostName()}) has incompatible version, disconnecting");
                 rpc.Invoke("Error", 3);
             }
             else
@@ -93,8 +84,7 @@ namespace MagicEitrBase
                 else
                 {
                     // Add client to validated list
-                    MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo(
-                        $"Adding peer ({rpc.m_socket.GetHostName()}) to validated list");
+                    MagicEitrBasePlugin.MagicEitrBaseLogger.LogInfo($"Adding peer ({rpc.m_socket.GetHostName()}) to validated list");
                     ValidatedPeers.Add(rpc);
                 }
             }

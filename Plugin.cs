@@ -13,21 +13,19 @@ namespace MagicEitrBase
     public class MagicEitrBasePlugin : BaseUnityPlugin
     {
         internal const string ModName = "MagicEitrBase";
-        internal const string ModVersion = "1.1.7";
+        internal const string ModVersion = "1.1.8";
         internal const string Author = "Azumatt";
         private const string ModGUID = Author + "." + ModName;
         private static string ConfigFileName = ModGUID + ".cfg";
         private static string ConfigFileFullPath = Paths.ConfigPath + Path.DirectorySeparatorChar + ConfigFileName;
-        
+
         internal static string ConnectionError = "";
 
-        private static readonly ConfigSync ConfigSync = new(ModGUID)
-            { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
+        private static readonly ConfigSync ConfigSync = new(ModGUID) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
 
         private readonly Harmony _harmony = new(ModGUID);
 
-        public static readonly ManualLogSource MagicEitrBaseLogger =
-            BepInEx.Logging.Logger.CreateLogSource(ModName);
+        public static readonly ManualLogSource MagicEitrBaseLogger = BepInEx.Logging.Logger.CreateLogSource(ModName);
 
         public enum Toggle
         {
@@ -40,17 +38,24 @@ namespace MagicEitrBase
             _serverConfigLocked = config("1 - General", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
             _ = ConfigSync.AddLockingConfigEntry(_serverConfigLocked);
 
-            Skill_Divider = config("2 - Math Variables", "Skill Divider", 100.0f, "The skill divider used in the calculation of the base eitr.");
+            Skill_Divider = config("2 - Math Variables", "Skill Divider", 100.0f, "Divider applied to your magic skill level in the bonus calculation. A higher value will reduce the bonus gained per level.");
 
-            Power_Amount = config("2 - Math Variables", "Power Amount", 2.0f, "The power amount used in the calculation of the base eitr.");
-            
-            Skill_Scalar = config("2 - Math Variables", "Skill Scalar", 100, "The skill scalar used in the calculation of the base eitr.");
+            Power_Amount = config("2 - Math Variables", "Power Amount", 2.0f, "Exponent used in the bonus calculation. Increasing this value makes the growth of the bonus non-linear.");
 
-            Final_Multiplier = config("2 - Math Variables", "Final Multiplier", 1.0f, "The final multiplier used in the calculation of the base eitr. This will multiply the result from the math used in the eitr calculation. Increasing this, will increase the result. Ex. A value of 2 will double the result.");
+            Skill_Scalar = config("2 - Math Variables", "Skill Scalar", 100, "Multiplier applied to the result of the exponential calculation. Adjust this to scale the bonus amount.");
 
-            LinearRegeneration = config("3 - Linear regeneration change", "Enabled", Toggle.On, "Enable linear change of etir regeneration rate. Overall time to regenerate etir to 100% is still almost the same.");
-            LinearRegenerationMultiplier = config("3 - Linear regeneration change", "Multiplier", 3f, "Multiplier of regeneration rate when etir is 0.\nIf value is above 1. Etir will regenerate faster at lower values and proportionally slower at higher values.\nIf value is below 1. Etir will regenerate slower at lower values and proportionally higher at higher values.");
-            LinearRegenerationThreshold = config("3 - Linear regeneration change", "Regeneration threshold", 0.5f, "Inflection point of eitr regeneration rate. Eitr regeneration rate is normal only in that point.\nIn that point regeneration rate changes its sign.\nIf set value is outside of 0-1 range etir will regenerate normally");
+            Final_Multiplier = config("2 - Math Variables", "Final Multiplier", 1.0f, "Final multiplier applied to the calculated bonus. For example, a value of 2 doubles the bonus added per level.");
+
+            LinearRegeneration = config("3 - Linear regeneration change", "Enabled", Toggle.On, "Toggle to enable linear adjustment of the Eitr regeneration rate. This adjusts the rate based on your current Eitr percentage, while keeping the overall regeneration time roughly constant.");
+            LinearRegenerationMultiplier = config("3 - Linear regeneration change", "Multiplier", 3f, "Multiplier applied at 0% Eitr. Values above 1 make regeneration faster at low Eitr (and slower at high Eitr), while values below 1 have the opposite effect.");
+            LinearRegenerationThreshold = config("3 - Linear regeneration change", "Regeneration threshold", 0.5f, "The Eitr percentage at which regeneration is considered 'normal.' Below this threshold, regeneration speeds up; above it, the rate slows down.");
+
+            ChangeBaseEitrRegen = config("4 - Base Eitr Regen", "Enabled", Toggle.On, "Enable custom base Eitr regeneration. When enabled, the mod will replace the default regeneration rate and delay with your specified values.");
+            ScaleBaseEitrRegenBasedOnSkill = config("4 - Base Eitr Regen", "Scale Based on Skill", Toggle.On, "When enabled, a bonus is added to the custom base regeneration rate based on your higher magic skill (Elemental or Blood Magic). This bonus is calculated using the math variables from Section 2.");
+            BaseEitrRegen = config("4 - Base Eitr Regen", "Base Regeneration rate", 2f, "Custom base Eitr regeneration rate (units per second) that is used when custom regeneration is enabled.");
+            BaseEitrRegenDelay = config("4 - Base Eitr Regen", "Base Regeneration delay", 2f, "Custom delay (in seconds) before Eitr starts regenerating when using the custom settings.");
+            BaseEitrRegenBonusMultiplier = config("4 - Base Eitr Regen", "Regen Bonus Multiplier", 0.15f, "Multiplier for the skill-based bonus when applied to Eitr regeneration. Lower values reduce the bonus to avoid near-instant regeneration at high skill levels.");
+
 
             SetupWatcher();
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -99,6 +104,11 @@ namespace MagicEitrBase
         internal static ConfigEntry<Toggle> LinearRegeneration = null!;
         internal static ConfigEntry<float> LinearRegenerationMultiplier = null!;
         internal static ConfigEntry<float> LinearRegenerationThreshold = null!;
+        public static ConfigEntry<Toggle> ChangeBaseEitrRegen = null!;
+        public static ConfigEntry<Toggle> ScaleBaseEitrRegenBasedOnSkill = null!;
+        public static ConfigEntry<float> BaseEitrRegen = null!;
+        public static ConfigEntry<float> BaseEitrRegenDelay = null!;
+        public static ConfigEntry<float> BaseEitrRegenBonusMultiplier = null!;
 
         private ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description, bool synchronizedSetting = true)
         {
@@ -118,5 +128,14 @@ namespace MagicEitrBase
         }
 
         #endregion
+    }
+
+
+    public static class ToggleExtensions
+    {
+        public static bool IsEnabled(this MagicEitrBasePlugin.Toggle toggle)
+        {
+            return toggle == MagicEitrBasePlugin.Toggle.On;
+        }
     }
 }
